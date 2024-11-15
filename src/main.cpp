@@ -175,29 +175,7 @@ void setup() {
     M5Cardputer.Display.setTextSize(1.6);
 
     // WiFI Setup
-    bool connected = false;
-    while (!connected)
-    {
-        // Scan Networks
-        int numNetworks = scanWifiNetworks();
-
-        // Select Network
-        String wifiSSID = selectWifiNetwork(numNetworks);
-        String wifiPassword = "";
-
-        // Try to connect with saved creds
-        connected = connectToSavedWiFi(wifiSSID);
-        if (!connected) {
-            wifiPassword = askWifiPassword(wifiSSID);
-            saveWifiCredentials(wifiSSID, wifiPassword);
-            connected = connectToSavedWiFi(wifiSSID);
-        }
-
-        // Still not connected with the new creds
-        if (!connected) { 
-            eraseWifiCredentials(); // erase creds
-        };
-    }
+    setupWifi();
 
     // Clear area
     M5Cardputer.Display.fillScreen(TFT_BLACK);

@@ -145,14 +145,13 @@ bool connectToSavedWiFi(String selectedSSID) {
         }
     }
 
-    M5Cardputer.Display.setTextColor(TFT_LIGHTGREY);
-    M5Cardputer.Display.setTextSize(1.4);
-
     if (WiFi.status() == WL_CONNECTED) {
         return true;
     }
 
     WiFi.disconnect();
+    M5Cardputer.Display.setTextColor(TFT_LIGHTGREY);
+    M5Cardputer.Display.setTextSize(1.4);
     M5Cardputer.Display.drawString("Failed to connect to WiFi", 18, 95);
     delay(3000);
     return false;    
@@ -179,4 +178,30 @@ void eraseWifiCredentials() {
     preferences.putString(NVS_SSID_KEY, "");
     preferences.putString(NVS_PASS_KEY, "");
     preferences.end(); 
+}
+
+void setupWifi() {
+    bool connected = false;
+    while (!connected)
+    {
+        // Scan Networks
+        int numNetworks = scanWifiNetworks();
+
+        // Select Network
+        String wifiSSID = selectWifiNetwork(numNetworks);
+        String wifiPassword = "";
+
+        // Try to connect with saved creds
+        connected = connectToSavedWiFi(wifiSSID);
+        if (!connected) {
+            wifiPassword = askWifiPassword(wifiSSID);
+            saveWifiCredentials(wifiSSID, wifiPassword);
+            connected = connectToSavedWiFi(wifiSSID);
+        }
+
+        // Still not connected with the new creds
+        if (!connected) { 
+            eraseWifiCredentials(); // erase creds
+        };
+    }
 }
