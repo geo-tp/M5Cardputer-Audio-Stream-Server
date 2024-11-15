@@ -10,6 +10,8 @@ It sets up an audio stream server on an M5Cardputer, capturing microphone input 
 - Captures audio at a sample rate of 16000 Hz.
 - Provides a simple HTML interface to play the audio stream.
 - Configurable via on-screen input for Wi-Fi credentials.
+- Sets display brightness to a very low value to improve battery consumption (and stealth level);
+- Scan and save Wi-Fi credentials on Non-Volatile-Memory for better experience.
 
 
 ## Installation
@@ -20,6 +22,7 @@ It sets up an audio stream server on an M5Cardputer, capturing microphone input 
 
 ## Usage
 
-- Configue the WiFi : SSID and password
-- Access the Audio Stream : Open a browser and navigate to the local IP adress displayed on the M5cardputer screen
+- Configure the WiFi : Scan for available Wifi networks and insert password when prompted. 
+- Press G0 during connection to reset SSID and password; 
+- Access the Audio Stream : Open a browser and navigate to the local IP adress displayed on the M5cardputer screen.
 
