@@ -15,8 +15,6 @@
 #define NVS_SSID_KEY "wifi_ssid"
 #define NVS_PASS_KEY "wifi_pass"
 
-String CFG_WIFI_SSID;
-String CFG_WIFI_PASS;
 Preferences preferences;
 
 String inputText(const String& prompt, int x, int y) {
@@ -34,12 +32,11 @@ String inputText(const String& prompt, int x, int y) {
                 for (auto i : status.word) {
                     data += i;
                 }
-                if (status.del) {
+                if (status.del && data.length() > 2) {
                     data.remove(data.length() - 1);
                 }
                 if (status.enter) {
                     data.remove(0, 2);
-                    M5Cardputer.Display.println(data);
                     return data;
                 }
                 M5Cardputer.Display.fillRect(0, y - 4, M5Cardputer.Display.width(), 25, BLACK);
@@ -50,29 +47,32 @@ String inputText(const String& prompt, int x, int y) {
     }
 }
 
-void displayWiFiInfo() {
-    M5Cardputer.Display.fillScreen(TFT_BLACK);
-    M5Cardputer.Display.setCursor(1, 1);
-    M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
-    M5Cardputer.Display.drawString("WiFi connecting.", 35, 1);
-    M5Cardputer.Display.setTextColor(TFT_DARKGRAY);
-    M5Cardputer.Display.drawString("SSID: " + WiFi.SSID(), 1, 18);
-    M5Cardputer.Display.drawString("IP: " + WiFi.localIP().toString(), 1, 33);
-    int8_t rssi = WiFi.RSSI();
-    M5Cardputer.Display.drawString("RSSI: " + String(rssi) + " dBm", 1, 48);
-    delay(1000);
+int scanWifiNetworks() {
+    int networksCount = 0;
+
+    while (networksCount == 0) {
+        M5Cardputer.Display.fillScreen(TFT_BLACK);
+        M5Cardputer.Display.setTextColor(TFT_DARKCYAN);
+        M5Cardputer.Display.setTextSize(1.6);
+        M5Cardputer.Display.drawString("Scanning Networks", 42, 60);
+        M5Cardputer.Display.setTextColor(TFT_LIGHTGREY);
+        M5Cardputer.Display.drawString("Connect to WiFi", 52, 80);
+        networksCount = WiFi.scanNetworks();
+
+        if (networksCount == 0) {
+            M5Cardputer.Display.drawString("No networks found", 45, 100);
+            delay(2000);
+        }
+    }
+    
+    return networksCount;
 }
 
-String scanAndDisplayNetworks() {
-    int numNetworks = WiFi.scanNetworks();
-    if (numNetworks == 0) {
-        M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
-        M5Cardputer.Display.drawString("Scan Networks", 1, 15);
-        return "";
-    } else {
+String selectWifiNetwork(int numNetworks) {
         M5Cardputer.Display.fillScreen(TFT_BLACK);
-        M5Cardputer.Display.setTextColor(TFT_DARKGRAY);
-        M5Cardputer.Display.drawString("Found Networks:", 1, 1);
+        M5Cardputer.Display.setTextColor(TFT_DARKCYAN);
+        M5Cardputer.Display.setTextSize(1.6);
+        M5Cardputer.Display.drawString("Select Network", 1, 1);
         int selectedNetwork = 0;
         M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
         while (1) {
@@ -84,7 +84,6 @@ String scanAndDisplayNetworks() {
                     M5Cardputer.Display.drawString("   " + ssid, 1, 18 + i * 18);
                 }
             }
-            M5Cardputer.Display.drawString("Select Network.", 1, 108);
             M5Cardputer.update();
             if (M5Cardputer.Keyboard.isChange()) {
                 if (M5Cardputer.Keyboard.isPressed()) {
@@ -105,75 +104,79 @@ String scanAndDisplayNetworks() {
             }
             delay(20);
         }
-    }
 }
 
-void connectToWiFi() {
-    CFG_WIFI_SSID = "";
-    CFG_WIFI_PASS = "";
+bool connectToSavedWiFi(String selectedSSID) {
+    String savedSSID = "";
+    String savedPassword = "";
+    int tm = 0;
 
     preferences.begin("wifi_settings", false);
     delay(200);
-    CFG_WIFI_SSID = preferences.getString(NVS_SSID_KEY, "");
-    CFG_WIFI_PASS = preferences.getString(NVS_PASS_KEY, "");
+    savedSSID = preferences.getString(NVS_SSID_KEY, "");
+    savedPassword = preferences.getString(NVS_PASS_KEY, "");
     preferences.end();
-    WiFi.disconnect();
-    WiFi.begin(CFG_WIFI_SSID.c_str(), CFG_WIFI_PASS.c_str());
 
-    int tm = 0;
-    M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
-    M5Cardputer.Display.print("Connecting :");
-    while (tm++ < 110 && WiFi.status() != WL_CONNECTED) {
-        M5Cardputer.update();
-        M5Cardputer.Display.setTextColor(TFT_RED);
-        M5Cardputer.Display.drawString("BtnG0 clean Config.", 1, 108);
-        if (M5Cardputer.BtnA.isPressed()){
-                for (int i=0; i < 5; i++){
-                  M5Cardputer.Speaker.tone(1337, 90);
-                  delay(90);
-                  M5Cardputer.Speaker.tone(1437, 90);
-                  delay(90);
-                }
-                M5Cardputer.Speaker.tone(1337, 120);
-                delay(120);                
-                Preferences preferences;
-                preferences.begin("wifi_settings", false);
-                preferences.clear();
-                preferences.end();
-                M5Cardputer.Display.clear();
-                M5Cardputer.Display.drawString("Memory Cleared.", 1, 60);
-                delay(1000);
-                ESP.restart();
-                return;
-         } else {
-          M5Cardputer.Display.setTextColor(TFT_DARKGRAY);
-          delay(100);
-          M5Cardputer.Display.print(".");
-         }
+    if (savedSSID.isEmpty()) {
+        return false;
+    } 
+
+    if (savedSSID != selectedSSID) {
+        return false;
     }
+
+    WiFi.disconnect();
+    WiFi.begin(savedSSID.c_str(), savedPassword.c_str());
+
+    M5Cardputer.Display.fillScreen(TFT_BLACK);
+    M5Cardputer.Display.setTextColor(TFT_DARKCYAN);
+    M5Cardputer.Display.drawString("Connecting", 70, 60);
+
+    M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
+    M5Cardputer.Display.setCursor(30, 80);
+    M5Cardputer.Display.setTextSize(0.5);
+
+    while (tm++ < 110 && WiFi.status() != WL_CONNECTED) {
+        delay(100);
+        M5Cardputer.Display.print(".");
+
+        if (tm == 55) {
+            M5Cardputer.Display.setCursor(30, 85);
+        }
+    }
+
+    M5Cardputer.Display.setTextColor(TFT_LIGHTGREY);
+    M5Cardputer.Display.setTextSize(1.4);
 
     if (WiFi.status() == WL_CONNECTED) {
-        displayWiFiInfo();
-        delay(250);
-    } else {      
-        M5Cardputer.Display.fillScreen(TFT_BLACK);
-        M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
-        M5Cardputer.Display.drawString("Searching WiFi", 2, 2);
-        CFG_WIFI_SSID = scanAndDisplayNetworks();
-        M5Cardputer.Display.fillScreen(TFT_BLACK);
-        M5Cardputer.Display.drawString("SSID: " + CFG_WIFI_SSID, 2, 2);
-        M5Cardputer.Display.drawString("Password:", 2, 20);
-        CFG_WIFI_PASS = inputText("> ", 4, M5Cardputer.Display.height() - 24);
-
-        //Preferences preferences;
-        preferences.begin("wifi_settings", false);
-        preferences.putString(NVS_SSID_KEY, CFG_WIFI_SSID);
-        preferences.putString(NVS_PASS_KEY, CFG_WIFI_PASS);
-        preferences.end();
-        M5Cardputer.Display.fillScreen(TFT_BLACK);
-        M5Cardputer.Display.drawString("SSID Password Registered.", 2, 60);
-        WiFi.begin(CFG_WIFI_SSID.c_str(), CFG_WIFI_PASS.c_str());
-        delay(100);
-        displayWiFiInfo();
+        return true;
     }
+
+    WiFi.disconnect();
+    M5Cardputer.Display.drawString("Failed to connect to WiFi", 18, 95);
+    delay(3000);
+    return false;    
+}
+
+String askWifiPassword(String ssid) {
+    M5Cardputer.Display.fillScreen(TFT_BLACK);
+    M5Cardputer.Display.setTextColor(TFT_DARKCYAN);
+    M5Cardputer.Display.drawString("SSID: " + ssid, 2, 2);
+    M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
+    M5Cardputer.Display.drawString("Enter the password", 37, 90);
+    return inputText("> ", 4, M5Cardputer.Display.height() - 24);
+}
+
+void saveWifiCredentials(String ssid, String password) {
+    preferences.begin("wifi_settings", false);
+    preferences.putString(NVS_SSID_KEY, ssid);
+    preferences.putString(NVS_PASS_KEY, password);
+    preferences.end();
+}
+
+void eraseWifiCredentials() {
+    preferences.begin("wifi_settings", false);
+    preferences.putString(NVS_SSID_KEY, "");
+    preferences.putString(NVS_PASS_KEY, "");
+    preferences.end(); 
 }
