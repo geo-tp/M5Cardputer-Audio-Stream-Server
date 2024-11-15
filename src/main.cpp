@@ -155,52 +155,71 @@ void setup() {
     M5Cardputer.Display.printf("Stream your microphone");
     delay(250);
     M5Cardputer.Display.drawRect(30, 60, ((M5Cardputer.Display.height() / 2) + 4), ((M5Cardputer.Display.height() / 2) + 4), TFT_DARKCYAN);
-    M5Cardputer.Display.qrcode("https://github.com/geo-tp/M5Cardputer-Audio-Stream-Server/tree/main", 32, 62, M5Cardputer.Display.height() / 2, 4);
-    M5Cardputer.Display.setTextSize(1);
+    M5Cardputer.Display.qrcode("https://github.com/geo-tp/M5Cardputer-Audio-Stream-Server", 32, 62, M5Cardputer.Display.height() / 2, 4);
     M5Cardputer.Display.setTextColor(TFT_DARKGRAY);
-    M5Cardputer.Display.setCursor(110, 62);
+    M5Cardputer.Display.setCursor(134, 70);
+    M5Cardputer.Display.setTextSize(1.2);
     M5Cardputer.Display.printf("<- Github");
-    M5Cardputer.Display.setCursor(110, 74);
-    M5Cardputer.Display.printf("2.0.0 - Unofficial");
-    M5Cardputer.Display.setCursor(110, 86);
-    M5Cardputer.Display.printf("G0 - Reset Wifi");
-    M5Cardputer.Display.setCursor(110, 98);
-    M5Cardputer.Display.printf("Economy mode ENABLED");
+    M5Cardputer.Display.setCursor(133, 83);
+    M5Cardputer.Display.setTextSize(1);
+    M5Cardputer.Display.printf("1.1 Version");
+    M5Cardputer.Display.setCursor(129, 95);
+    M5Cardputer.Display.printf("Geo - Mmatuda");
     M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
-    M5Cardputer.Display.setCursor(110, 110);
+    M5Cardputer.Display.setCursor(117, 114);
+    M5Cardputer.Display.setTextSize(1.4);
     M5Cardputer.Display.printf("Press any key");
     waitPress();
     M5Cardputer.Display.fillScreen(TFT_BLACK);
     M5Cardputer.Display.setCursor(15, 18);
     M5Cardputer.Display.setTextSize(1.6);
 
+    // WiFI Setup
+    bool connected = false;
+    while (!connected)
+    {
+        // Scan Networks
+        int numNetworks = scanWifiNetworks();
 
-    // Wifi connection
-    connectToWiFi();
+        // Select Network
+        String wifiSSID = selectWifiNetwork(numNetworks);
+        String wifiPassword = "";
 
-    // We cant run without Wifi, we wait until status is ok
-    M5Cardputer.Display.setCursor(4, 60);
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
-        M5Cardputer.Display.print(".");
+        // Try to connect with saved creds
+        connected = connectToSavedWiFi(wifiSSID);
+        if (!connected) {
+            wifiPassword = askWifiPassword(wifiSSID);
+            saveWifiCredentials(wifiSSID, wifiPassword);
+            connected = connectToSavedWiFi(wifiSSID);
+        }
+
+        // Still not connected with the new creds
+        if (!connected) { 
+            eraseWifiCredentials(); // erase creds
+        };
     }
 
     // Clear area
-    M5Cardputer.Display.fillRect(0, 0, M5Cardputer.Display.width(),
-                                 M5Cardputer.Display.height(), TFT_BLACK);
+    M5Cardputer.Display.fillScreen(TFT_BLACK);
+
+    // Main Title
+    M5Cardputer.Display.drawRoundRect(10, 10, 220, 30, 5, TFT_DARKCYAN); // Around main title
+    M5Cardputer.Display.setTextColor(TFT_DARKCYAN);
+    M5Cardputer.Display.setTextSize(2);
+    M5Cardputer.Display.setCursor(19, 18);
+    M5Cardputer.Display.printf("AudioStreamServer");
 
     // Display Rec
-    //M5Cardputer.Display.fillCircle(96, 64, 8, RED);
-    //M5Cardputer.Display.setCursor(114, 58);
-    //M5Cardputer.Display.setTextColor(TFT_DARKGREY);
-    //M5Cardputer.Display.printf("REC");
+    M5Cardputer.Display.fillCircle(96, 64, 8, TFT_DARKCYAN);
+    M5Cardputer.Display.setCursor(114, 58);
+    M5Cardputer.Display.setTextColor(TFT_DARKGREY);
+    M5Cardputer.Display.printf("REC");
 
     // Ip Address
     M5Cardputer.Display.setCursor(20, 85);
     M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
     M5Cardputer.Display.setTextSize(1.7);
-    M5Cardputer.Display.println("Audio Stream Starting");
+    M5Cardputer.Display.println("Audio Stream Address");
     M5Cardputer.Display.drawRoundRect(10, 105, 220, 23, 3, TFT_DARKGREY); // Around ip
     M5Cardputer.Display.setCursor(22, 110);
     M5Cardputer.Display.print("http://");
@@ -208,13 +227,7 @@ void setup() {
     M5Cardputer.Display.println("/");
     M5Cardputer.Display.setCursor(31, 50);
     M5Cardputer.Display.setTextColor(TFT_RED);
-    delay(1500);
-    M5Cardputer.Display.println("ECONOMY MODE");
-    M5Cardputer.Display.setCursor(31, 68);
-    M5Cardputer.Display.setTextColor(TFT_DARKGRAY);
-    M5Cardputer.Display.println("Press any key...");
-    waitPress();
-    delay(100);
+    delay(3000);
     M5Cardputer.Display.setBrightness(32);
 
     // Http server task on core 1
