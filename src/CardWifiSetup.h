@@ -69,41 +69,41 @@ int scanWifiNetworks() {
 }
 
 String selectWifiNetwork(int numNetworks) {
-        M5Cardputer.Display.fillScreen(TFT_BLACK);
-        M5Cardputer.Display.setTextColor(TFT_DARKCYAN);
-        M5Cardputer.Display.setTextSize(1.6);
-        M5Cardputer.Display.drawString("Select Network", 1, 1);
-        int selectedNetwork = 0;
-        M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
-        while (1) {
-            for (int i = 0; i < 5 && i < numNetworks; ++i) {
-                String ssid = WiFi.SSID(i);
-                if (i == selectedNetwork) {
-                    M5Cardputer.Display.drawString("-> " + ssid, 1, 18 + i * 18);
-                } else {
-                    M5Cardputer.Display.drawString("   " + ssid, 1, 18 + i * 18);
-                }
+    M5Cardputer.Display.fillScreen(TFT_BLACK);
+    M5Cardputer.Display.setTextColor(TFT_DARKCYAN);
+    M5Cardputer.Display.setTextSize(1.6);
+    M5Cardputer.Display.drawString("Select Network", 1, 1);
+    int selectedNetwork = 0;
+    M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
+    while (1) {
+        for (int i = 0; i < 5 && i < numNetworks; ++i) {
+            String ssid = WiFi.SSID(i);
+            if (i == selectedNetwork) {
+                M5Cardputer.Display.drawString("-> " + ssid, 1, 18 + i * 18);
+            } else {
+                M5Cardputer.Display.drawString("   " + ssid, 1, 18 + i * 18);
             }
-            M5Cardputer.update();
-            if (M5Cardputer.Keyboard.isChange()) {
-                if (M5Cardputer.Keyboard.isPressed()) {
-                    M5Cardputer.Speaker.tone(1437, 20);
-                    M5Cardputer.Display.fillRect(0, 11, 20, 75, BLACK);
-                    Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
-
-                    if (M5Cardputer.Keyboard.isKeyPressed(';') && selectedNetwork > 0) {
-                        selectedNetwork--;
-                    }
-                    if (M5Cardputer.Keyboard.isKeyPressed('.') && selectedNetwork < min(4, numNetworks - 1)) {
-                        selectedNetwork++;
-                    }
-                    if (status.enter) {
-                        return WiFi.SSID(selectedNetwork);
-                    }
-                }
-            }
-            delay(20);
         }
+        M5Cardputer.update();
+        if (M5Cardputer.Keyboard.isChange()) {
+            if (M5Cardputer.Keyboard.isPressed()) {
+                M5Cardputer.Speaker.tone(1437, 20);
+                M5Cardputer.Display.fillRect(0, 11, 20, 75, BLACK);
+                Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
+
+                if (M5Cardputer.Keyboard.isKeyPressed(';') && selectedNetwork > 0) {
+                    selectedNetwork--;
+                }
+                if (M5Cardputer.Keyboard.isKeyPressed('.') && selectedNetwork < min(4, numNetworks - 1)) {
+                    selectedNetwork++;
+                }
+                if (status.enter) {
+                    return WiFi.SSID(selectedNetwork);
+                }
+            }
+        }
+        delay(20);
+    }
 }
 
 void setWifiCredentials(String ssid, String password) {
@@ -129,10 +129,9 @@ bool connectToWifi(String wifiSSID, String wifiPassword) {
     M5Cardputer.Display.fillScreen(TFT_BLACK);
     M5Cardputer.Display.setTextColor(TFT_DARKCYAN);
     M5Cardputer.Display.drawString("Connecting", 70, 60);
-
     M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
     M5Cardputer.Display.setCursor(30, 80);
-    M5Cardputer.Display.setTextSize(0.5);
+    M5Cardputer.Display.setTextSize(0.5); // for the loading dots
 
     while (tm++ < 110 && WiFi.status() != WL_CONNECTED) {
         delay(100);
@@ -168,14 +167,15 @@ void setupWifi() {
     bool connected = false;
     String savedSSID;
     String savedPassword;
-    while (!connected)
-    {
+    String selectedSSID;
+    String wifiPassword;
+
+    while (!connected) {
         // Scan Networks
         int numNetworks = scanWifiNetworks();
 
         // Select Network
-        String selectedSSID = selectWifiNetwork(numNetworks);
-        String wifiPassword = "";
+        selectedSSID = selectWifiNetwork(numNetworks);
 
         // Get saved credentials
         getWifiCredentials(savedSSID, savedPassword);
