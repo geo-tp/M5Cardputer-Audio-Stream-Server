@@ -124,9 +124,6 @@ void setup() {
     auto cfg = M5.config();
     M5Cardputer.begin(cfg);
 
-    char ssid[32] = "";
-    char password[32] = "";
-
     // Microphone configuration
     auto micConfig = M5Cardputer.Mic.config();
     micConfig.sample_rate = record_samplerate;
