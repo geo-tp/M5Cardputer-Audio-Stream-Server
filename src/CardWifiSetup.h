@@ -18,11 +18,13 @@
 Preferences preferences;
 
 String inputText(const String& prompt, int x, int y) {
-    M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
     String data = "> ";
+
+    M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
     M5Cardputer.Display.setRotation(1);
     M5Cardputer.Display.setTextScroll(true);
     M5Cardputer.Display.drawString(prompt, x, y);
+
     while (1) {
         M5Cardputer.update();
         if (M5Cardputer.Keyboard.isChange()) {
@@ -69,12 +71,14 @@ int scanWifiNetworks() {
 }
 
 String selectWifiNetwork(int numNetworks) {
+    int selectedNetwork = 0;
+
     M5Cardputer.Display.fillScreen(TFT_BLACK);
     M5Cardputer.Display.setTextColor(TFT_DARKCYAN);
     M5Cardputer.Display.setTextSize(1.6);
     M5Cardputer.Display.drawString("Select Network", 1, 1);
-    int selectedNetwork = 0;
     M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
+
     while (1) {
         for (int i = 0; i < 5 && i < numNetworks; ++i) {
             String ssid = WiFi.SSID(i);
@@ -84,6 +88,7 @@ String selectWifiNetwork(int numNetworks) {
                 M5Cardputer.Display.drawString("   " + ssid, 1, 18 + i * 18);
             }
         }
+
         M5Cardputer.update();
         if (M5Cardputer.Keyboard.isChange()) {
             if (M5Cardputer.Keyboard.isPressed()) {
@@ -165,6 +170,7 @@ String askWifiPassword(String ssid) {
 
 void setupWifi() {
     bool connected = false;
+    int numNetworks = 0;
     String savedSSID;
     String savedPassword;
     String selectedSSID;
@@ -172,7 +178,7 @@ void setupWifi() {
 
     while (!connected) {
         // Scan Networks
-        int numNetworks = scanWifiNetworks();
+        numNetworks = scanWifiNetworks();
 
         // Select Network
         selectedSSID = selectWifiNetwork(numNetworks);
