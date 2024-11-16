@@ -202,7 +202,7 @@ void setup() {
     M5Cardputer.Display.setCursor(31, 50);
     M5Cardputer.Display.setTextColor(TFT_RED);
     delay(3000);
-    M5Cardputer.Display.setBrightness(32);
+    M5Cardputer.Display.setBrightness(16);
 
     // Http server task on core 1
     xTaskCreatePinnedToCore(startServer, "HTTP Server Task", 4096, NULL, 1, NULL, 1);
