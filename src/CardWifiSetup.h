@@ -80,7 +80,7 @@ String selectWifiNetwork(int numNetworks) {
     M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
 
     while (1) {
-        for (int i = 0; i < 5 && i < numNetworks; ++i) {
+        for (int i = 0; i < 7 && i < numNetworks; ++i) {
             String ssid = WiFi.SSID(i);
             if (i == selectedNetwork) {
                 M5Cardputer.Display.drawString("-> " + ssid, 1, 18 + i * 18);
