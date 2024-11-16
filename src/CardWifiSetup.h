@@ -56,13 +56,13 @@ int scanWifiNetworks() {
         M5Cardputer.Display.fillScreen(TFT_BLACK);
         M5Cardputer.Display.setTextColor(TFT_DARKCYAN);
         M5Cardputer.Display.setTextSize(1.6);
-        M5Cardputer.Display.drawString("Scanning Networks", 42, 60);
+        M5Cardputer.Display.drawString("Scanning Networks", 42, 55);
         M5Cardputer.Display.setTextColor(TFT_LIGHTGREY);
-        M5Cardputer.Display.drawString("Connect to WiFi", 52, 80);
+        M5Cardputer.Display.drawString("Connect to WiFi", 52, 75);
         networksCount = WiFi.scanNetworks();
 
         if (networksCount == 0) {
-            M5Cardputer.Display.drawString("No networks found", 45, 100);
+            M5Cardputer.Display.drawString("No networks found", 45, 95);
             delay(2000);
         }
     }
@@ -133,9 +133,9 @@ bool connectToWifi(String wifiSSID, String wifiPassword) {
 
     M5Cardputer.Display.fillScreen(TFT_BLACK);
     M5Cardputer.Display.setTextColor(TFT_DARKCYAN);
-    M5Cardputer.Display.drawString("Connecting", 70, 60);
+    M5Cardputer.Display.drawString("Connecting", 70, 55);
     M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
-    M5Cardputer.Display.setCursor(30, 80);
+    M5Cardputer.Display.setCursor(30, 75);
     M5Cardputer.Display.setTextSize(0.5); // for the loading dots
 
     while (tm++ < 110 && WiFi.status() != WL_CONNECTED) {
@@ -143,7 +143,7 @@ bool connectToWifi(String wifiSSID, String wifiPassword) {
         M5Cardputer.Display.print(".");
 
         if (tm == 55) {
-            M5Cardputer.Display.setCursor(30, 85);
+            M5Cardputer.Display.setCursor(30, 80);
         }
     }
 
@@ -154,7 +154,7 @@ bool connectToWifi(String wifiSSID, String wifiPassword) {
     WiFi.disconnect();
     M5Cardputer.Display.setTextColor(TFT_LIGHTGREY);
     M5Cardputer.Display.setTextSize(1.4);
-    M5Cardputer.Display.drawString("Failed to connect to WiFi", 18, 95);
+    M5Cardputer.Display.drawString("Failed to connect to WiFi", 18, 90);
     delay(3000);
     return false;
 }
