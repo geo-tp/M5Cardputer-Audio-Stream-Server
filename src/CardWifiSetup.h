@@ -120,23 +120,11 @@ void getWifiCredentials(String &ssid, String &password) {
     preferences.end();
 }
 
-bool connectToSavedWiFi(String selectedSSID) {
-    String savedSSID = "";
-    String savedPassword = "";
+bool connectToWifi(String wifiSSID, String wifiPassword) {
     int tm = 0;
 
-    getWifiCredentials(savedSSID, savedPassword);
-
-    if (savedSSID.isEmpty()) {
-        return false;
-    } 
-
-    if (savedSSID != selectedSSID) {
-        return false;
-    }
-
     WiFi.disconnect();
-    WiFi.begin(savedSSID.c_str(), savedPassword.c_str());
+    WiFi.begin(wifiSSID.c_str(), wifiPassword.c_str());
 
     M5Cardputer.Display.fillScreen(TFT_BLACK);
     M5Cardputer.Display.setTextColor(TFT_DARKCYAN);
@@ -164,7 +152,7 @@ bool connectToSavedWiFi(String selectedSSID) {
     M5Cardputer.Display.setTextSize(1.4);
     M5Cardputer.Display.drawString("Failed to connect to WiFi", 18, 95);
     delay(3000);
-    return false;    
+    return false;
 }
 
 String askWifiPassword(String ssid) {
@@ -178,26 +166,33 @@ String askWifiPassword(String ssid) {
 
 void setupWifi() {
     bool connected = false;
+    String savedSSID;
+    String savedPassword;
     while (!connected)
     {
         // Scan Networks
         int numNetworks = scanWifiNetworks();
 
         // Select Network
-        String wifiSSID = selectWifiNetwork(numNetworks);
+        String selectedSSID = selectWifiNetwork(numNetworks);
         String wifiPassword = "";
 
-        // Try to connect with saved creds
-        connected = connectToSavedWiFi(wifiSSID);
-        if (!connected) {
-            wifiPassword = askWifiPassword(wifiSSID);
-            setWifiCredentials(wifiSSID, wifiPassword);
-            connected = connectToSavedWiFi(wifiSSID);
-        }
+        // Get saved credentials
+        getWifiCredentials(savedSSID, savedPassword);
 
-        // Still not connected with the new creds
-        if (!connected) { 
+        // Saved SSID is empty or selected SSID doesn't match saved SSID
+        if (savedSSID.isEmpty() || savedSSID != selectedSSID) {
+            wifiPassword = askWifiPassword(selectedSSID);
+        } else {
+            wifiPassword = savedPassword;
+        }
+        
+        connected = connectToWifi(selectedSSID, wifiPassword);
+
+        if (connected) { 
+            setWifiCredentials(selectedSSID, wifiPassword);
+        } else {
             setWifiCredentials("", ""); // erase creds
-        };
+        }
     }
 }
