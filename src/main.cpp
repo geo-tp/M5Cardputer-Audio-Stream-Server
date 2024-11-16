@@ -153,7 +153,6 @@ void setup() {
     M5Cardputer.Display.setCursor(21, 44);
     M5Cardputer.Display.setTextSize(1.6);
     M5Cardputer.Display.printf("Stream your microphone");
-    delay(250);
     M5Cardputer.Display.drawRect(30, 60, ((M5Cardputer.Display.height() / 2) + 4), ((M5Cardputer.Display.height() / 2) + 4), TFT_DARKCYAN);
     M5Cardputer.Display.qrcode("https://github.com/geo-tp/M5Cardputer-Audio-Stream-Server", 32, 62, M5Cardputer.Display.height() / 2, 4);
     M5Cardputer.Display.setTextColor(TFT_DARKGRAY);
