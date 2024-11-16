@@ -106,18 +106,11 @@ String selectWifiNetwork(int numNetworks) {
         }
 }
 
-void saveWifiCredentials(String ssid, String password) {
+void setWifiCredentials(String ssid, String password) {
     preferences.begin("wifi_settings", false);
     preferences.putString(NVS_SSID_KEY, ssid);
     preferences.putString(NVS_PASS_KEY, password);
     preferences.end();
-}
-
-void eraseWifiCredentials() {
-    preferences.begin("wifi_settings", false);
-    preferences.putString(NVS_SSID_KEY, "");
-    preferences.putString(NVS_PASS_KEY, "");
-    preferences.end(); 
 }
 
 void getWifiCredentials(String &ssid, String &password) {
@@ -198,13 +191,13 @@ void setupWifi() {
         connected = connectToSavedWiFi(wifiSSID);
         if (!connected) {
             wifiPassword = askWifiPassword(wifiSSID);
-            saveWifiCredentials(wifiSSID, wifiPassword);
+            setWifiCredentials(wifiSSID, wifiPassword);
             connected = connectToSavedWiFi(wifiSSID);
         }
 
         // Still not connected with the new creds
         if (!connected) { 
-            eraseWifiCredentials(); // erase creds
+            setWifiCredentials("", ""); // erase creds
         };
     }
 }
