@@ -106,16 +106,33 @@ String selectWifiNetwork(int numNetworks) {
         }
 }
 
+void saveWifiCredentials(String ssid, String password) {
+    preferences.begin("wifi_settings", false);
+    preferences.putString(NVS_SSID_KEY, ssid);
+    preferences.putString(NVS_PASS_KEY, password);
+    preferences.end();
+}
+
+void eraseWifiCredentials() {
+    preferences.begin("wifi_settings", false);
+    preferences.putString(NVS_SSID_KEY, "");
+    preferences.putString(NVS_PASS_KEY, "");
+    preferences.end(); 
+}
+
+void getWifiCredentials(String &ssid, String &password) {
+    preferences.begin("wifi_settings", false);
+    ssid = preferences.getString(NVS_SSID_KEY, "");
+    password = preferences.getString(NVS_PASS_KEY, "");
+    preferences.end();
+}
+
 bool connectToSavedWiFi(String selectedSSID) {
     String savedSSID = "";
     String savedPassword = "";
     int tm = 0;
 
-    preferences.begin("wifi_settings", false);
-    delay(200);
-    savedSSID = preferences.getString(NVS_SSID_KEY, "");
-    savedPassword = preferences.getString(NVS_PASS_KEY, "");
-    preferences.end();
+    getWifiCredentials(savedSSID, savedPassword);
 
     if (savedSSID.isEmpty()) {
         return false;
@@ -164,20 +181,6 @@ String askWifiPassword(String ssid) {
     M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
     M5Cardputer.Display.drawString("Enter the password", 37, 90);
     return inputText("> ", 4, M5Cardputer.Display.height() - 24);
-}
-
-void saveWifiCredentials(String ssid, String password) {
-    preferences.begin("wifi_settings", false);
-    preferences.putString(NVS_SSID_KEY, ssid);
-    preferences.putString(NVS_PASS_KEY, password);
-    preferences.end();
-}
-
-void eraseWifiCredentials() {
-    preferences.begin("wifi_settings", false);
-    preferences.putString(NVS_SSID_KEY, "");
-    preferences.putString(NVS_PASS_KEY, "");
-    preferences.end(); 
 }
 
 void setupWifi() {
