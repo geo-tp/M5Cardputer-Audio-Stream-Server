@@ -1,10 +1,39 @@
 #include <M5Cardputer.h>
 
-void showTitle(const String& title, int x, int y) {
-    M5Cardputer.Display.fillScreen(TFT_BLACK);
+void showMainTitle() {
+    M5Cardputer.Display.drawRoundRect(10, 10, 220, 30, 5, TFT_DARKCYAN); // Around main title
+    M5Cardputer.Display.setTextColor(TFT_DARKCYAN);
+    M5Cardputer.Display.setTextSize(2);
+    M5Cardputer.Display.setCursor(19, 18);
+    M5Cardputer.Display.printf("AudioStreamServer");
+}
+
+void showSubTitle() {
     M5Cardputer.Display.setTextColor(TFT_DARKCYAN);
     M5Cardputer.Display.setTextSize(1.6);
-    M5Cardputer.Display.drawString(title, x, y);
+    M5Cardputer.Display.setCursor(21, 44);
+    M5Cardputer.Display.printf("Stream your microphone");
+
+}
+void showGithubInfos() {
+    M5Cardputer.Display.setTextColor(TFT_DARKGRAY);
+    M5Cardputer.Display.setTextSize(1.2);
+    M5Cardputer.Display.setCursor(134, 70);
+    M5Cardputer.Display.printf("<- Github");
+    M5Cardputer.Display.setCursor(133, 83);
+    M5Cardputer.Display.setTextSize(1);
+    M5Cardputer.Display.printf("1.1 Version");
+    M5Cardputer.Display.setCursor(129, 95);
+    M5Cardputer.Display.printf("Geo - Mmatuda");
+    M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
+    M5Cardputer.Display.setCursor(117, 114);
+    M5Cardputer.Display.setTextSize(1.4);
+    M5Cardputer.Display.printf("Press any key");
+}
+
+void showQrCode() {
+    M5Cardputer.Display.drawRect(30, 60, ((M5Cardputer.Display.height() / 2) + 4), ((M5Cardputer.Display.height() / 2) + 4), TFT_DARKCYAN);
+    M5Cardputer.Display.qrcode("https://github.com/geo-tp/M5Cardputer-Audio-Stream-Server", 32, 62, M5Cardputer.Display.height() / 2, 4);
 }
 
 void showIP(const IPAddress& ip) {
@@ -19,35 +48,6 @@ void showIP(const IPAddress& ip) {
     M5Cardputer.Display.println("/");
     M5Cardputer.Display.setCursor(31, 50);
     M5Cardputer.Display.setTextColor(TFT_RED);
-}
-
-void showMainTitle() {
-    M5Cardputer.Display.drawRoundRect(10, 10, 220, 30, 5, TFT_DARKCYAN); // Around main title
-    M5Cardputer.Display.setTextColor(TFT_DARKCYAN);
-    M5Cardputer.Display.setTextSize(2);
-    M5Cardputer.Display.setCursor(19, 18);
-    M5Cardputer.Display.printf("AudioStreamServer");
-}
-
-void showSubTitle() {
-    M5Cardputer.Display.setCursor(21, 44);
-    M5Cardputer.Display.setTextSize(1.6);
-    M5Cardputer.Display.printf("Stream your microphone");
-    M5Cardputer.Display.drawRect(30, 60, ((M5Cardputer.Display.height() / 2) + 4), ((M5Cardputer.Display.height() / 2) + 4), TFT_DARKCYAN);
-    M5Cardputer.Display.qrcode("https://github.com/geo-tp/M5Cardputer-Audio-Stream-Server", 32, 62, M5Cardputer.Display.height() / 2, 4);
-    M5Cardputer.Display.setTextColor(TFT_DARKGRAY);
-    M5Cardputer.Display.setCursor(134, 70);
-    M5Cardputer.Display.setTextSize(1.2);
-    M5Cardputer.Display.printf("<- Github");
-    M5Cardputer.Display.setCursor(133, 83);
-    M5Cardputer.Display.setTextSize(1);
-    M5Cardputer.Display.printf("1.1 Version");
-    M5Cardputer.Display.setCursor(129, 95);
-    M5Cardputer.Display.printf("Geo - Mmatuda");
-    M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
-    M5Cardputer.Display.setCursor(117, 114);
-    M5Cardputer.Display.setTextSize(1.4);
-    M5Cardputer.Display.printf("Press any key");
 }
 
 void showRecIndicator() {

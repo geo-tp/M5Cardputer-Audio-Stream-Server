@@ -36,6 +36,10 @@ void setup() {
     initialiseScreen();
     showMainTitle();
     showSubTitle();
+    showGithubInfos();
+    showQrCode();
+
+    // Wait until key press
     waitPress();
 
     // WiFI Setup
