@@ -1,8 +1,8 @@
 # Audio Stream Server for M5Cardputer
 
-![](./audio-stream.jpg)
-
 It sets up an audio stream server on an M5Cardputer, capturing microphone input and streaming it over a Wi-Fi connection to a web page. This allows you to listen to the microphone input from the M5Cardputer remotely through a web browser.
+
+![](./audio-stream.jpg)
 
 
 ## Features
