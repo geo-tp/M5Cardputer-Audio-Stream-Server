@@ -83,7 +83,7 @@ static void drawWifiList(int numNetworks, int topIndex, int selectedIndex, int x
     M5Cardputer.Display.fillRect(0, y0 - 2, screenWidth, listHeight + 4, TFT_BLACK);
 
     // Draw visible rows
-    M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY, TFT_DARKCYAN);
+    M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY, TFT_BLACK);
     for (int row = 0; row < visibleRows; row++) {
         int ssidIndex = topIndex + row;
         if (ssidIndex >= numNetworks) 
@@ -150,7 +150,7 @@ String selectWifiNetwork(int numNetworks)
 
     // Select network header
     M5Cardputer.Display.fillScreen(TFT_BLACK);
-    M5Cardputer.Display.setTextColor(0x05A3, TFT_DARKCYAN);
+    M5Cardputer.Display.setTextColor(TFT_DARKCYAN, TFT_BLACK);
     M5Cardputer.Display.setTextSize(1.6);
     M5Cardputer.Display.drawString("Select Network", 1, 1);
     M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY, TFT_BLACK);
