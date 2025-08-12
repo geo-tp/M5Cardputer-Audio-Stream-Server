@@ -70,41 +70,118 @@ int scanWifiNetworks() {
     return networksCount;
 }
 
-String selectWifiNetwork(int numNetworks) {
-    int selectedNetwork = 0;
+static void drawWifiList(int numNetworks, int topIndex, int selectedIndex, int x, int y0, int visibleRows, int rowHeight)
+{
+    bool showBar = (numNetworks > visibleRows);
+    int screenWidth = M5Cardputer.Display.width();
+    int listHeight = visibleRows * rowHeight;
+    int vbarWidth = showBar ? 8 : 0;
+    int vbarX = screenWidth - vbarWidth;
+    int listWidth = screenWidth - vbarWidth - 2;
 
+    // Clear everything below the header
+    M5Cardputer.Display.fillRect(0, y0 - 2, screenWidth, listHeight + 4, TFT_BLACK);
+
+    // Draw visible rows
+    M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY, TFT_DARKCYAN);
+    for (int row = 0; row < visibleRows; row++) {
+        int ssidIndex = topIndex + row;
+        if (ssidIndex >= numNetworks) 
+            break;
+
+        int y = y0 + row * rowHeight;
+        String ssid = WiFi.SSID(ssidIndex);
+        String line;
+        if (ssidIndex == selectedIndex)
+            line = "-> " + ssid;
+        else 
+            line = "   " + ssid;
+
+        M5Cardputer.Display.drawString(line, x, y);
+    }
+
+    if (!showBar)
+        return;
+
+    // Overwrite scrollbar on top of the text
+    M5Cardputer.Display.fillRect(vbarX, y0 - 2, vbarWidth, listHeight + 4, TFT_BLACK);
+    if (numNetworks > visibleRows) {
+        int trackX = vbarX + 1;
+        int trackY = y0;
+        int trackWidth = vbarWidth - 2;
+        int trackHeight = listHeight;
+
+        // Scrollbar background
+        M5Cardputer.Display.fillRect(trackX, trackY, trackWidth, trackHeight, TFT_DARKGREY);
+        M5Cardputer.Display.drawRect(trackX, trackY, trackWidth, trackHeight, 0x05A3);
+
+        // Scrollbar thumb
+        int minThumb = 12;
+        int thumbHeigth = (trackHeight * visibleRows) / numNetworks;
+        if (thumbHeigth < minThumb) thumbHeigth = minThumb;
+
+        // Thumb position maps scroll 'top' into [0 .. trackH - thumbH]
+        int scrollRange = numNetworks - visibleRows;
+        int thumbY = trackY;
+        if (scrollRange > 0)
+            thumbY = trackY + ((trackHeight - thumbHeigth) * topIndex) / scrollRange;
+
+        // Draw scrollbar thumb
+        M5Cardputer.Display.fillRect(trackX + 1, thumbY + 1, trackWidth - 2, thumbHeigth - 2, 0x05A3);
+    }
+}
+
+String selectWifiNetwork(int numNetworks)
+{
+    int visibleRows = 6;
+    int rowHeight = 18;
+    int X = 1;
+    int Y0 = 18;
+    int selectedIndex = 0;  // Row which is currently selected
+    int topIndex = 0;       // The first row on the list
+    // The visible window is comprised of:
+    // ===HEADER===                 
+    // topIndex                     |S|
+    // indexItem1                   |C|
+    // indexItem2                   |R|
+    // indexItem3                   |O|
+    // indexItem4                   |L|
+    // topIndex+visibleRows - 1     |L|
+
+    // Select network header
     M5Cardputer.Display.fillScreen(TFT_BLACK);
-    M5Cardputer.Display.setTextColor(TFT_DARKCYAN);
+    M5Cardputer.Display.setTextColor(0x05A3, TFT_DARKCYAN);
     M5Cardputer.Display.setTextSize(1.6);
     M5Cardputer.Display.drawString("Select Network", 1, 1);
-    M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY);
+    M5Cardputer.Display.setTextColor(TFT_LIGHTGRAY, TFT_BLACK);
 
-    while (1) {
-        for (int i = 0; i < 7 && i < numNetworks; ++i) {
-            String ssid = WiFi.SSID(i);
-            if (i == selectedNetwork) {
-                M5Cardputer.Display.drawString("-> " + ssid, 1, 18 + i * 18);
-            } else {
-                M5Cardputer.Display.drawString("   " + ssid, 1, 18 + i * 18);
-            }
-        }
+    drawWifiList(numNetworks, topIndex, selectedIndex, X, Y0, visibleRows, rowHeight);
 
+    while (true) {
         M5Cardputer.update();
-        if (M5Cardputer.Keyboard.isChange()) {
-            if (M5Cardputer.Keyboard.isPressed()) {
-                M5Cardputer.Speaker.tone(1437, 20);
-                M5Cardputer.Display.fillRect(0, 11, 20, 75, BLACK);
-                Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
+        if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isPressed()) {
+            auto inputKey = M5Cardputer.Keyboard.keysState();
 
-                if (M5Cardputer.Keyboard.isKeyPressed(';') && selectedNetwork > 0) {
-                    selectedNetwork--;
-                }
-                if (M5Cardputer.Keyboard.isKeyPressed('.') && selectedNetwork < min(4, numNetworks - 1)) {
-                    selectedNetwork++;
-                }
-                if (status.enter) {
-                    return WiFi.SSID(selectedNetwork);
-                }
+            // Up (';')
+            if (M5Cardputer.Keyboard.isKeyPressed(';') && selectedIndex > 0) {
+                selectedIndex--;
+                // Means that when I press 'up' the top item isn't the top item anymore, it's second to selectedIndex, so replace it
+                if (selectedIndex < topIndex) 
+                    topIndex = selectedIndex;
+                drawWifiList(numNetworks, topIndex, selectedIndex, X, Y0, visibleRows, rowHeight);
+            }
+
+            // Down ('.')
+            if (M5Cardputer.Keyboard.isKeyPressed('.') && selectedIndex < (numNetworks - 1)) {
+                selectedIndex++;
+                // When you press 'down' the top item is not seen anymore, so it needs to be updated
+                if (selectedIndex >= topIndex + visibleRows)
+                    topIndex = selectedIndex - visibleRows + 1;
+                drawWifiList(numNetworks, topIndex, selectedIndex, X, Y0, visibleRows, rowHeight);
+            }
+
+            if (inputKey.enter) {
+                return WiFi.SSID(selectedIndex);
             }
         }
         delay(20);
